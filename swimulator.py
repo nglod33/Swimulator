@@ -1,27 +1,23 @@
 import json
 import requests
+import rosterSolver as rs
 
-# The inputs are the names of the team jl files
+# Col of events in the numpy array
 EVENTS_DICT = {
-    150: "50 free",
-    1100: "100 free",
-    1200: "200 free",
-    1500: "500 free",
-    11000: "1000 free",
-    11650: "1650 free",
-    2100: "100 back",
-    2200: "200 back",
-    3100: "100 breast",
-    3200: "200 breast",
-    4100: "100 fly",
-    4200: "200 fly",
-    5200: "200 IM",
-    5400: "400 IM",
-    6200: "200 free relay",
-    6400: "400 free relay",
-    7800: "800 free relay",
-    8200: "200 medley relay",
-    8400: "400 medley relay"
+    150: 0,
+    1100: 1,
+    1200: 2,
+    1500: 3,
+    11000: 4,
+    11650: 5,
+    2100: 6,
+    2200: 7,
+    3100: 8,
+    3200: 9,
+    4100: 10,
+    4200: 11,
+    5200: 12,
+    5400: 13
 }
 
 
@@ -31,7 +27,10 @@ def swimulate(team1, team2, gender, age=25):
     # Age included for future expansion to mcsl
     team_1_dict = create_dict(team1)
     team_2_dict = create_dict(team2)
-    return
+
+    team_1_lineup, team_2_lineup = calculate_lineup(team_1_dict, team_2_dict, gender)
+
+    return get_results(team_1_lineup, team_2_lineup)
 
 
 def create_dict(team):
@@ -46,10 +45,25 @@ def create_dict(team):
     return return_dict
 
 
-def calculate_lineup(team_dict):
+def calculate_lineup(team_dict_one, team_dict_two, gender):
+
     # First, replace times with power points
-    for swimmer in team_dict.values():
-        pass
+    for swimmer in team_dict_one.values():
+        for event in swimmer:
+            swimmer[event] = calculate_power_points(swimmer[event], event, gender)
+
+    for swimmer in team_dict_two.values():
+        for event in swimmer:
+            swimmer[event] = calculate_power_points(swimmer[event], event, gender)
+
+    optimized_team_one = rs.optimize(team_dict_one, team_dict_two)
+    optimized_team_two = rs.optimize(team_dict_two, team_dict_one)
+
+    return optimized_team_one, optimized_team_two
+
+
+# Given the optimal lineup of each team, tablulate/display the results
+def get_results(lineup_one, lineup_two):
     return
 
 
@@ -65,9 +79,9 @@ def calculate_power_points(time, event_id, gender, age=25):
         minutes_split = minutes_split[1]
     seconds_split = minutes_split.split(".")
 
-    payload = {'DSC[DistanceID]': EVENTS_DICT[event_id].split(' ')[0],
+    payload = {'DSC[DistanceID]': str(event_id)[1:],
                'DSC[StrokeID]': str(event_id)[0],
-               'DSC[CourseID]': 3,  # SCY by default for NCAA meets
+               'DSC[CourseID]': 1,  # SCY by default for NCAA meets
                'Gender': gender,
                'Age': age,          # Age doesn't matter in NCAA meets, just give them a standard
                'Minutes': minutes,
@@ -80,7 +94,8 @@ def calculate_power_points(time, event_id, gender, age=25):
 
 
 def main():
-    print(calculate_power_points("1:54.01", 2200, "F"))
+    team_dict = create_dict('Harvard_University_22_races.jl')
+    print(calculate_lineup(team_dict, "F"))
 
 
 if __name__ == "__main__":
