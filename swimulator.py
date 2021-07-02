@@ -2,24 +2,6 @@ import json
 import requests
 import rosterSolver as rs
 
-# Col of events in the numpy array
-EVENTS_DICT = {
-    150: 0,
-    1100: 1,
-    1200: 2,
-    1500: 3,
-    11000: 4,
-    11650: 5,
-    2100: 6,
-    2200: 7,
-    3100: 8,
-    3200: 9,
-    4100: 10,
-    4200: 11,
-    5200: 12,
-    5400: 13
-}
-
 
 def swimulate(team1, team2, gender, age=25):
     # Build a dict of swimmers with their names as keys and a dict of race-time pairs as the value
@@ -63,6 +45,8 @@ def calculate_lineup(team_dict_one, team_dict_two, gender):
 
 
 # Given the optimal lineup of each team, tablulate/display the results
+# Add in relays and diving in this stage
+# *Shouldn't* need to optimize for diving or relays, just use best scores and times
 def get_results(lineup_one, lineup_two):
     return
 
