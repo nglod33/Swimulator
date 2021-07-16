@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.ma as ma
 
 # Col of events in the numpy array
 EVENTS_DICT = {
@@ -18,8 +19,13 @@ EVENTS_DICT = {
     5400: 13
 }
 
+OPPONENT_PP = []
+TEAM_PP = []
+
 CONSIDERATION_THRESHOLD = 5
 EVENT_NUMBER = 14
+EVENTS_PER_SWIMMER = 3
+SWIMMERS_PER_EVENT = 3
 
 
 def optimize(roster_one, roster_two, isNCAA=True):
@@ -38,6 +44,76 @@ def mcsl_optimize(roster_one, roster_two):
 # This just optimizes a roster for individual swims. Dives and relays are done separately
 def ncaa_duel_optimize(roster_one, roster_two):
     team_one_lineup, team_one_times = create_np_array(roster_one)
+
+    # Find the best non-certain times in the array, and arrange them in order of power points
+    i = 0
+    j = 0
+    pp_coord_list = []
+    # First digit: pp score, second two digits: coords
+    while i < EVENT_NUMBER:
+        while j < team_one_times.shape[1]:
+            if team_one_lineup[i, j] == 0 and team_one_times[i, j] != 0:
+                pp_coord_list.append([team_one_times[i, j], i, j])
+            j += 1
+        i += 1
+    # sort the remaining uncategorized times by highest first
+    pp_coord_list = sorted(pp_coord_list, key=lambda x: x[0])
+
+    # Set Global vars to team pp and opponent pp because those shouldn't change
+    global OPPONENT_PP
+    OPPONENT_PP = roster_two
+    global TEAM_PP
+    TEAM_PP = team_one_times
+    return backtrack_roster(team_one_lineup, pp_coord_list)
+
+
+# Find the optimal roster through backtracking. Use evaluate roster to evaluate
+# This operates on the assumption that it is always better to have more swimmers in an event.
+# There will never be a situation where 2/3 swimmers in an event will be better that 3/3 swimmesr in an event
+def backtrack_roster(roster_array, times_list):
+    # If there are no more choice to make, return the completed roster
+    if len(times_list) <= 0:
+        return ncaa_evaluate_lineup(roster_array)
+
+    next_choice = times_list.pop(0)
+    # First, evaluate outcomes if you don't swim this swimmer in this event
+    without_next_lineup, without_next_score = backtrack_roster(roster_array, times_list)
+
+    with_next_score = 0
+    with_next_pp = 0
+    # Check if possible by checking current swimmers for this event, and current events for this swimmer
+    if np.sum(roster_array[next_choice[1]]) < SWIMMERS_PER_EVENT \
+            and np.sum(roster_array[:, next_choice[2]]) < EVENTS_PER_SWIMMER:
+        roster_array[next_choice[1], next_choice[2]] = 1
+        with_next_lineup, with_next_score = backtrack_roster(roster_array, times_list)
+
+    # return the result with the greater eval
+    if without_next_score > with_next_score:
+        return without_next_lineup, without_next_score
+    return with_next_lineup, with_next_score
+
+
+# Returns integer based on the difference in pp between top 3 swimmers and opponents top n
+def ncaa_evaluate_lineup(lineup, n=5):
+
+    # First, calculate the power points
+    power_points = np.multiply(lineup, TEAM_PP)
+
+    # Then calculate swim value by using Power Points/(by the number of swimmers on both teams that beat you + 1)
+    i = 0
+    while i < EVENT_NUMBER:
+        j = 0
+        combined_swimmers_best = np.sort(np.apprend(OPPONENT_PP[i], TEAM_PP[i]))[::-1]
+        while j < power_points[i].size:
+            if power_points[i, j] == 0:
+                continue
+            else:
+                # go through the combined swimmers in each event until one beats you
+                # Use >= because your own time will always be in there, so at least one person will be >=
+                power_points[i, j] = power_points[i, j] // np.where[combined_swimmers_best[i] >= power_points[i, j]].size
+        i += 1
+
+    return lineup, np.sum(power_points)
 
 
 # Takes a team dict and creates an array of power points out of it
@@ -73,23 +149,16 @@ def create_np_array(roster_one):
     while i < lineup_array.shape[1]:
         nonzero_count = np.count_nonzero(times_array[:, i])
         # Checks to see if the swimmer has 3 or less events, if yes, it considers them for automatic qualification
-        if nonzero_count <= 3:
+        if nonzero_count <= EVENTS_PER_SWIMMER:
             j = 0
             while j < EVENT_NUMBER:
-                if times_array[i, j] > 0:
+                if times_array[i, j] > 0 and times_array[i, j] >= np.sort(times_array[i])[::-1][:3][-1]:
                     # Checks to see if the swimmer is top 3 in the event, if yes, automatically puts them in
-                    if times_array[i, j] >= np.sort(times_array[i])[::-1][:3][-1]:
-                        lineup_array[i, j] = 1
+                    lineup_array[i, j] = 1
                 j += 1
         i += 1
 
     return lineup_array, times_array
-
-
-# Returns integer based on the difference in pp between top 3 swimmers and opponents top n
-def ncaa_evaluate_lineup(lineup, times, opposition, n=5):
-    return
-
 
 def main():
     pass
