@@ -1,6 +1,7 @@
 import json
 import requests
 import rosterSolver as rs
+import time
 
 
 def swimulate(team1, team2, gender, age=25):
@@ -48,7 +49,7 @@ def calculate_lineup(team_dict_one, team_dict_two, gender):
 # Add in relays and diving in this stage
 # *Shouldn't* need to optimize for diving or relays, just use best scores and times
 def get_results(lineup_one, lineup_two):
-    return
+    return str(lineup_one) + " \n" + str(lineup_two)
 
 
 def calculate_power_points(time, event_id, gender, age=25):
@@ -77,9 +78,25 @@ def calculate_power_points(time, event_id, gender, age=25):
     return requests.post(URL, data=payload).text
 
 
+# Turns a lineup into a pretty printable string
+def lineup_to_string(lineup):
+    pass
+
+
+# Takes two optimized lineups and scores the meet between them
+def score_meet(lineup_one, lineup_two):
+    pass
+
+
 def main():
-    team_dict = create_dict('Harvard_University_22_races.jl')
-    print(calculate_lineup(team_dict, "F"))
+
+    start = time.time()
+    team_dict_1 = create_dict('University_of_Pennsylvania_21_races.jl')
+    team_dict_2 = create_dict('Yale_University_21_races.jl')
+    print(calculate_lineup(team_dict_1, team_dict_2, "F"))
+
+    execution_time = time.time() - start
+    print("Execution time: " + str(execution_time))
 
 
 if __name__ == "__main__":
