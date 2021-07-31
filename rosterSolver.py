@@ -18,6 +18,7 @@ EVENTS_DICT = {
     "5400": 13
 }
 
+
 OPPONENT_PP = []
 TEAM_PP = []
 
@@ -27,15 +28,9 @@ EVENTS_PER_SWIMMER = 3
 SWIMMERS_PER_EVENT = 3
 
 
-def optimize(roster_one, roster_two, isNCAA=True):
-    if isNCAA:
-        return ncaa_duel_optimize(roster_one, roster_two)
-    else:
-        return mcsl_optimize(roster_one, roster_two)
-
-
-# TODO: Implement backtracking for MCSL solution after ncaa is complete
-def mcsl_optimize(roster_one, roster_two):
+# For MCSL the process is much the same, except the relays can be included, there will be no diving, and each age/gender
+# group will need to be backtracked itself
+def mcsl_duel_optimize(roster_one, roster_two):
     return
 
 
@@ -111,6 +106,11 @@ def backtrack_roster(roster_array, times_list):
         return with_next_lineup, with_next_score
 
 
+# In the MCSL version, this will be used to evaluate individual age/gender groups
+def mcsl_evaluate_lineup(lineup, n=5):
+    pass
+
+
 # Returns integer based on the difference in pp between top 3 swimmers and opponents top n
 def ncaa_evaluate_lineup(lineup, n=5):
 
@@ -133,6 +133,7 @@ def ncaa_evaluate_lineup(lineup, n=5):
     return lineup, np.sum(power_points)
 
 
+# In the MCSL version, this will be used on individual age/gender groups
 # Takes a team dict and creates an array of power points out of it
 def create_np_array(roster_one):
 
