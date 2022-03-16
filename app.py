@@ -10,6 +10,4 @@ def simulate_meet():
     teams = dict(json.loads(request.data))
 
 
-
-
 app.run()
