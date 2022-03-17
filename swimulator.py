@@ -1,6 +1,6 @@
 import json
 import requests
-import rosterSolver as rs
+from Solvers import ncaaSolver as rs
 import time
 
 
