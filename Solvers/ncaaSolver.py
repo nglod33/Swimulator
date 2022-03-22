@@ -1,5 +1,5 @@
 import numpy as np
-import solverUtilities as su
+from Solvers import solverUtilities as su
 import json
 
 OPPONENT_PP = []
@@ -33,7 +33,7 @@ def ncaa_duel_optimize(roster_one, roster_two):
     OPPONENT_PP = team_two_times
     global TEAM_PP
     TEAM_PP = team_one_times
-    lineup, eval_score = su.backtrack_roster(team_one_lineup, pp_coord_list, ncaa_evaluate_lineup)
+    lineup, eval_score = su.backtrack_roster(team_one_lineup, pp_coord_list, ncaa_evaluate_lineup, cfg)
 
     # Convert the lineup back to a dict with events as the key and then name-time pairs as the values
     final_lineup_dict = {}

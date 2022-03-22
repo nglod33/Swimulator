@@ -15,7 +15,7 @@ class RosterCrawler(scrapy.Spider):
         self.season = season
         self.team_name = team_name
         self.event_list = [150, 1100, 1200, 1500, 11000, 2100, 2200, 3100, 3200, 4100, 4200, 5200, 5400]
-        self.file = open(team_name.replace(" ", "_") + "_" + str(season) + '_races.jl', 'w')
+        self.file = open('teamFiles/' + team_name.replace(" ", "_") + "_" + str(season) + '_races.jl', 'w')
         for event in self.event_list:
             self.start_urls.append(f'{self.team_url}/times/?gender={self.gender}&event={event}&season={self.season}')
 

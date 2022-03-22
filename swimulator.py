@@ -2,14 +2,16 @@ import json
 import requests
 from Solvers import ncaaSolver as ns
 from Solvers import mcslSolver as ms
+from Solvers import solverUtilities as su
 import time
+import sys
 
 
 def swimulate(team1, team2, gender, age=25, cfg="configs/NCAA.json"):
     # Build a dict of swimmers with their names as keys and a dict of race-time pairs as the value
     # Gender needed for power point calculation
     cfgDict = json.load(open(cfg))
-    if cfg=="configs/MCSL.json":
+    if cfg == "configs/MCSL.json":
         # Team1 and Team2 for MCSL should just be CSV of team
         team_1_dict = create_mcsl_dict(team1)
         team_2_dict = create_mcsl_dict(team2)
@@ -114,9 +116,8 @@ def score_meet(lineup_one, lineup_two):
 
 
 def main():
-
     start = time.time()
-    print(swimulate("University_of_Pennsylvania_21_races.jl", "Yale_University_21_races.jl", "F"))
+    print(swimulate(sys.argv[1], sys.argv[2], sys.argv[3]))
 
     execution_time = time.time() - start
     print("Execution time: " + str(execution_time))
