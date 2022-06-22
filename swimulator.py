@@ -1,8 +1,6 @@
 import json
 import requests
 from Solvers import ncaaSolver as ns
-from Solvers import mcslSolver as ms
-from Solvers import solverUtilities as su
 import time
 import sys
 
@@ -21,6 +19,10 @@ def swimulate(team1, team2, gender, age=25, cfg="configs/NCAA.json"):
         team_1_dict = create_ncaa_dict(team1)
         team_2_dict = create_ncaa_dict(team2)
         team_1_lineup, team_2_lineup = calculate_ncaa_lineup(team_1_dict, team_2_dict, gender)
+
+    print("TEST TEAM ONE DICT: ")
+    print(team_1_dict)
+    print("END TEST TEAM ONE DICT")
 
     return lineup_to_string(team_1_lineup, cfgDict) + "\n" + lineup_to_string(team_2_lineup, cfgDict)
 
@@ -60,11 +62,32 @@ def calculate_ncaa_lineup(team_dict_one, team_dict_two, gender):
         for event in swimmer:
             swimmer[event] = calculate_power_points(swimmer[event], event, gender)
 
+    # TODO: Put team name as category somewhere for printing
     optimized_team_one = ns.ncaa_duel_optimize(team_dict_one, team_dict_two)
     optimized_team_two = ns.ncaa_duel_optimize(team_dict_two, team_dict_one)
 
+    # Add scores into dicts
+    optimized_team_one, optimized_team_two = score_ncaa_meet(optimized_team_one, optimized_team_two)
+
     return optimized_team_one, optimized_team_two
 
+
+def score_ncaa_meet(team_1_lineup, team_2_lineup):
+    # Create dict of events with name-pp pairs as entries
+    events_dict = {}
+    for lineup in [team_1_lineup, team_2_lineup]:
+        for swimmer in team_1_lineup.keys():
+            for race in team_1_lineup[swimmer].keys():
+                if race in events_dict.keys():
+                    events_dict[race].append((swimmer, team_1_lineup[swimmer][race]))
+                else:
+                    events_dict[race] = [(swimmer, team_1_lineup[swimmer][race])]
+
+    # TODO:Go through each event, sort by best time, assign scores to names in the main dicts
+
+
+    # Return main dicts
+    return team_1_lineup, team_2_lineup
 
 def calculate_power_points(time, event_id, gender, age=25):
     url = "https://www.usaswimming.org/api/Times_PowerPointCalculator/CalculatePowerPoints"
